@@ -6,7 +6,7 @@ function sendEmail(timeText, htmlContent, callback) {
         htmlContent,
         timeText
     );
-    transporter.sendMail(mailToJanis, callback);
+    emailTransporter.sendMail(mailToJanis, callback);
 
     const mailToIT = setMailOption(
         "it@digital-accountant.co.uk",
