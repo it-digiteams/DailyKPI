@@ -5,8 +5,8 @@ const emailTransporter = nodemailer.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user: "it@digital-accountant.co.uk",
-        pass: "seqb sxvs onkr sill",
+        user: "",
+        pass: "",
     },
 });
 
