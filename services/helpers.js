@@ -2,7 +2,7 @@ const { sheets, drive } = require("../config/googleAuth.js");
 
 // Function to re-shift rows based on a predefined order of names, keeping the TOTAL row last
 function reShiftRowsBasedOnName(rangeData) {
-    const nameOrder = ["Saad", "Umar", "Faraz Ali", "Aitzaz", "Fahad", "Bilal", "Shariq", "Talha Ali", "Sami Ullah"];
+    const nameOrder = ["Saad", "Umar", "Faraz Ali", "Aitzaz", "Fahad", "Bilal", "Shariq", "Talha Ali", "Sami Ullah", "Usama"];
 
     // Separate the TOTAL row and other rows
     const totalRow = rangeData.find((row) => row[1] === "TOTAL");
@@ -32,28 +32,26 @@ async function fetchMonthlyData(sheetId, sheetName) {
     try {
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: `${sheetName}!R6:X1000`, // Wide enough range
+            range: `${sheetName}!R22:X1000`, // start where your report actually begins
         });
 
         const data = response.data.values || [];
         const previousMonth = getPreviousMonthNumber();
 
-        // Collect all monthRows with matching month number in column 0
         const monthRows = [];
-        let lastIndex = -1;
+        let footerRow = [];
 
-        data.forEach((row, index) => {
+        // Scan rows until TOTAL is found
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+
+            // Collect rows for the previous month
             if (row[0] === String(previousMonth)) {
                 monthRows.push(row);
-                lastIndex = index;
             }
-        });
 
-        // Look for the TOTAL row after the last month row
-        let footerRow = [];
-        for (let i = lastIndex + 1; i < data.length; i++) {
-            const row = data[i];
-            if (row[1]?.toUpperCase() === "TOTAL") {
+            // Stop when TOTAL appears *after* month rows
+            if (row[1]?.toUpperCase() === "TOTAL" && monthRows.length > 0) {
                 footerRow = row;
                 break;
             }

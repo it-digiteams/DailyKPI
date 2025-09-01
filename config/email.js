@@ -5,8 +5,11 @@ const emailTransporter = nodemailer.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user: "",
-        pass: "",
+        user: "it@digital-accountant.co.uk",
+        pass: "rklp pzsc mqgk heih",
+    },
+    tls: {
+        rejectUnauthorized: false, // sometimes needed on VPS with self-signed certs
     },
 });
 
