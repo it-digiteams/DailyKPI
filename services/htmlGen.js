@@ -3,7 +3,7 @@ function generateHTMLRows(tableRows, footerRow) {
     let htmlTableRows = "";
 
     // Define a default row with placeholder values
-    const defaultRow = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"];
+    const defaultRow = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"];
 
     // Ensure tableRows is an array; if empty, use defaultRow
     if (!Array.isArray(tableRows) || tableRows.length === 0) {
@@ -52,6 +52,7 @@ function generateHTMLTemplate(htmlTableRows, emailHeader, time) {
                           <th style="${getHeaderStyle()}">TRAINING</th>
                           <th style="${getHeaderStyle()}">OPERATIONS</th>
                           <th style="${getHeaderStyle()}">Total</th>
+                          <th style="${getHeaderStyle()}">% Efficiency</th>
                       </tr>
                   </thead>
                   <tbody>

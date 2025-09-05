@@ -1,12 +1,12 @@
 const { emailTransporter } = require("../config/email.js");
 
 function sendEmail(timeText, htmlContent, callback) {
-    const mailToJanis = setMailOption(
-        "info@digital-accountant.co.uk",
-        htmlContent,
-        timeText
-    );
-    emailTransporter.sendMail(mailToJanis, callback);
+    // const mailToJanis = setMailOption(
+    //     "info@digital-accountant.co.uk",
+    //     htmlContent,
+    //     timeText
+    // );
+    // emailTransporter.sendMail(mailToJanis, callback);
 
     const mailToIT = setMailOption(
         "it@digital-accountant.co.uk",

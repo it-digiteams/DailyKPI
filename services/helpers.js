@@ -32,7 +32,7 @@ async function fetchMonthlyData(sheetId, sheetName) {
     try {
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: `${sheetName}!R22:X1000`, // start where your report actually begins
+            range: `${sheetName}!S22:Z1000`, // start where your report actually begins
         });
 
         const data = response.data.values || [];
@@ -98,7 +98,7 @@ function getPreviousWeekRange() {
         endRow = 58 + (previousWeek - 3) * 14;
     }
 
-    return `I${startRow}:O${endRow}`;
+    return `J${startRow}:Q${endRow}`;
 }
 
 // Fetch data for the previous week
@@ -137,9 +137,9 @@ async function fetchDailySheetData(sheetId, sheetName) {
     try {
         // Define the ranges to fetch
         const ranges = [
-            `${sheetName}!A6:G16`,
-            `${sheetName}!A19:G29`,
-            `${sheetName}!A32:G42`,
+            `${sheetName}!A6:H16`,
+            `${sheetName}!A19:H29`,
+            `${sheetName}!A32:H42`,
         ];
 
         // Fetch all data in a single batch request
