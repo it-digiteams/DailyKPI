@@ -1,0 +1,14 @@
+# Security: Ignore environment variables
+.env
+
+# Dependencies: Ignore the heavy lifting
+node_modules/
+
+# Logs: Ignore error logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System Files: Ignore OS-specific files
+.DS_Store
+Thumbs.db

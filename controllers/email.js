@@ -4,7 +4,7 @@ const { generateHTMLRows, generateHTMLTemplate } = require("../services/htmlGen.
 
 // Core logic functions (no req/res)
 const runDailyEmail = async () => {
-    const sheetId = "1I-xdqVGpAGU0hqlVSAyu1tUDVuMxMf0GX50wHmXXTEE";
+    const sheetId = process.env.GOOGLE_SPREADSHEET_ID;
     const sheetName = "REPORT";
 
     const data = await fetchDailySheetData(sheetId, sheetName);
@@ -27,30 +27,41 @@ const runDailyEmail = async () => {
 };
 
 const runWeeklyEmail = async () => {
-    const sheetId = "1I-xdqVGpAGU0hqlVSAyu1tUDVuMxMf0GX50wHmXXTEE";
+    const sheetId = process.env.GOOGLE_SPREADSHEET_ID;
     const sheetName = "REPORT";
 
-    const data = await fetchWeeklySheetData(sheetId, sheetName);
-    if (!data || !Array.isArray(data) || data.length === 0) {
-        throw new Error("No data found in the specified range.");
-    }
+    try {
+        const data = await fetchWeeklySheetData(sheetId, sheetName);
 
-    const tableRows = data.slice(-11, -1);
-    const footerRow = data.slice(-1)[0];
+        // --- DEFENSIVE GUARD CLAUSE ---
+        // Prevents crash if data is empty or null
+        if (!data || data.length < 2) {
+            console.error("Weekly Email Error: Insufficient data fetched.");
+            return; 
+        }
 
-    const htmlTableRows = generateHTMLRows(tableRows, footerRow);
-    const htmlContent = generateHTMLTemplate(htmlTableRows, "Timesheet Weekly Update", "Week");
+        // ✅ DYNAMIC SLICING (The Fix)
+        // We assume the strict structure: [ ...members, TOTAL ]
+        const footerRow = data[data.length - 1]; 
+        const tableRows = data.slice(0, -1); 
 
-    return new Promise((resolve, reject) => {
-        sendEmail("Weekly", htmlContent, (error, info) => {
-            if (error) return reject(error);
-            resolve(info);
+        const htmlTableRows = generateHTMLRows(tableRows, footerRow);
+        const htmlContent = generateHTMLTemplate(htmlTableRows, "Timesheet Weekly Update", "Week");
+
+        return new Promise((resolve, reject) => {
+            sendEmail("Weekly", htmlContent, (error, info) => {
+                if (error) return reject(error);
+                resolve(info);
+            });
         });
-    });
+
+    } catch (error) {
+        console.error("Critical error in runWeeklyEmail:", error);
+    }
 };
 
 const runMonthlyEmail = async () => {
-    const sheetId = "1I-xdqVGpAGU0hqlVSAyu1tUDVuMxMf0GX50wHmXXTEE";
+    const sheetId = process.env.GOOGLE_SPREADSHEET_ID;
     const sheetName = "REPORT";
 
     const { monthRows, footerRow } = await fetchMonthlyData(sheetId, sheetName);

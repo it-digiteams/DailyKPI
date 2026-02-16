@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cron = require('node-cron');
 const ukdaRoutes = require("./routes/ukda.routes.js");

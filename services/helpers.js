@@ -2,19 +2,40 @@ const { sheets, drive } = require("../config/googleAuth.js");
 
 // Function to re-shift rows based on a predefined order of names, keeping the TOTAL row last
 function reShiftRowsBasedOnName(rangeData) {
-    const nameOrder = ["Saad", "Umar", "Faraz Ali", "Aitzaz", "Fahad", "Bilal", "Shariq", "Talha Ali", "Sami Ullah", "Usama"];
+    // 1. Updated master list to include Allian and use base names
+    const nameOrder = ["Saad", "Umar", "Faraz", "Aitzaz", "Fahad", "Bilal", "Shariq", "Talha", "Sami", "Usama", "Allian"];
 
-    // Separate the TOTAL row and other rows
-    const totalRow = rangeData.find((row) => row[1] === "TOTAL");
-    let otherRows = rangeData.filter((row) => row[1] !== "TOTAL");
+    // 2. Identify TOTAL row
+    const totalRow = rangeData.find((row) => row[1] && row[1].toString().trim().toUpperCase() === "TOTAL");
+    
+    // 3. Filter and normalize names
+    let otherRows = rangeData.filter((row) => {
+        const nameInSheet = row[1] ? row[1].toString().trim() : "";
+        return nameInSheet !== "" && nameInSheet.toUpperCase() !== "TOTAL";
+    });
 
-    // Remove rows with names not in nameOrder
-    otherRows = otherRows.filter(row => nameOrder.includes(row[1]));
+    // 4. Improved Matching Logic
+    otherRows = otherRows.filter(row => {
+        const nameInSheet = row[1].toString().trim().toLowerCase();
+        // Check if ANY name in our master list is contained within the sheet name (or vice versa)
+        return nameOrder.some(target => 
+            nameInSheet.includes(target.toLowerCase()) || 
+            target.toLowerCase().includes(nameInSheet)
+        );
+    });
 
-    // Sort the remaining rows based on nameOrder
-    otherRows.sort((a, b) => nameOrder.indexOf(a[1]) - nameOrder.indexOf(b[1]));
+    // 5. Sort based on the index in nameOrder
+    otherRows.sort((a, b) => {
+        const nameA = a[1].toString().trim().toLowerCase();
+        const nameB = b[1].toString().trim().toLowerCase();
+        
+        const indexA = nameOrder.findIndex(n => nameA.includes(n.toLowerCase()));
+        const indexB = nameOrder.findIndex(n => nameB.includes(n.toLowerCase()));
+        
+        return indexA - indexB;
+    });
 
-    // Reattach the TOTAL row at the end of the sorted data
+    // 6. Reattach Total
     if (totalRow) {
         otherRows.push(totalRow);
     }
@@ -67,36 +88,45 @@ async function fetchMonthlyData(sheetId, sheetName) {
     }
 }
 
-// Function to get the ISO week number (ISO-8601 standard)
+// ✅ FIX 1: Robust ISO Week Calculation (Standard ISO-8601)
 function getISOWeekNumber(date) {
     const tempDate = new Date(date.getTime());
-    tempDate.setHours(0, 0, 0, 0);
-    tempDate.setDate(tempDate.getDate() + 3 - ((tempDate.getDay() + 6) % 7)); // Align with Thursday
-    const firstThursday = new Date(tempDate.getFullYear(), 0, 4);
-    const weekNumber = Math.ceil(((tempDate - firstThursday) / 86400000 + firstThursday.getDay() - 3) / 7);
-    return weekNumber;
+    // Set to nearest Thursday: current date + 4 - current day number (Monday is 1)
+    tempDate.setUTCDate(tempDate.getUTCDate() + 4 - (tempDate.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(tempDate.getUTCFullYear(), 0, 1));
+    // Calculate full weeks to nearest Thursday
+    const weekNo = Math.ceil((((tempDate - yearStart) / 86400000) + 1) / 7);
+    return weekNo;
 }
-
-// Function to determine the previous week's row range
+// ✅ FIX 2: Corrected Row Math based on Actual Sheet Structure
+// Sheet Analysis:
+//   - Week 1 starts at Row 18 (J18)
+//   - Week 7 starts at Row 96 (J96)  
+//   - Week 8 starts at Row 109 (J109)
+//   - Stride calculation: (96 - 18) / (7 - 1) = 13 rows per week
 function getPreviousWeekRange() {
     const today = new Date();
-    let previousWeek = getISOWeekNumber(today) - 1; // Get last week's ISO number
+    const currentWeek = getISOWeekNumber(today);
+    
+    // Calculate previous week (last week's report)
+    let previousWeek = currentWeek - 1; 
 
-    // Handle edge case: If the previous week is < 1, set it to week 53
-    if (previousWeek < 1) previousWeek = 53;
+    // Handle edge case: if it's Week 1, fetch Week 52 of previous year
+    if (previousWeek < 1) previousWeek = 52;
 
-    let startRow, endRow;
+    // CORRECTED MATH:
+    // Base row: 18 (where Week 1 starts)
+    // Stride: 13 rows between each week
+    // Each week spans 13 rows total (all members + blanks + total)
+    const startRow = 18 + (previousWeek - 1) * 13;
+    const endRow = startRow + 12;  // 13 rows total per week section
 
-    if (previousWeek === 1) {
-        startRow = 22;
-        endRow = 32;
-    } else if (previousWeek === 2) {
-        startRow = 35;
-        endRow = 45;
-    } else {
-        startRow = 48 + (previousWeek - 3) * 14;
-        endRow = 58 + (previousWeek - 3) * 14;
-    }
+    console.log(`\n╔════════ WEEKLY RANGE CALCULATOR ════════╗`);
+    console.log(`║ 📅 Today: ${today.toDateString().padEnd(34)} ║`);
+    console.log(`║ 🔢 Current ISO Week: ${String(currentWeek).padEnd(23)} ║`);
+    console.log(`║ 🔙 Fetching Week: ${String(previousWeek).padEnd(27)} ║`);
+    console.log(`║ 📍 Excel Range: J${startRow}:Q${endRow}${' '.repeat(Math.max(0, 27 - (startRow + ':Q' + endRow).length))} ║`);
+    console.log(`╚═══════════════════════════════════════════╝\n`);
 
     return `J${startRow}:Q${endRow}`;
 }
@@ -112,19 +142,29 @@ async function fetchWeeklySheetData(sheetId, sheetName) {
 
         // Extract values and filter out empty rows
         const data = response.data.values || [];
+        console.log(`\n📊 Raw data fetched (${data.length} rows):`);
+        data.forEach((row, idx) => {
+            console.log(`  Row ${idx}: [${row.join(' | ')}]`);
+        });
+
         let filteredData = data.filter(row => row[1]); // Ensure column J (index 1) is not empty
+        console.log(`\n✅ After filtering empty rows: ${filteredData.length} rows remain`);
 
         // Check if the second row is a duplicate header and remove it
         if (filteredData.length > 1) {
-            const firstRow = filteredData[0].map(cell => cell.trim().toLowerCase());
-            const secondRow = filteredData[1].map(cell => cell.trim().toLowerCase());
+            const firstRow = filteredData[0].map(cell => String(cell).trim().toLowerCase());
+            const secondRow = filteredData[1].map(cell => String(cell).trim().toLowerCase());
 
             if (JSON.stringify(firstRow) === JSON.stringify(secondRow)) {
+                console.log(`⚠️  Removing duplicate header row`);
                 filteredData.splice(1, 1); // Remove the second row if it's a duplicate header
             }
         }
 
+        console.log(`\n🔄 Before reShiftRowsBasedOnName: ${filteredData.length} rows`);
         const updatedData = reShiftRowsBasedOnName(filteredData);
+        console.log(`\n✅ After reShiftRowsBasedOnName: ${updatedData.length} rows\n`);
+        
         return updatedData;
     } catch (error) {
         console.error("Error fetching previous week's data:", error.message);
