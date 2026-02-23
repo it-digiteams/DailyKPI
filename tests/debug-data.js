@@ -1,5 +1,5 @@
 // debug-data.js
-const { sheets } = require("./config/googleAuth.js");
+const { sheets } = require("../config/googleAuth.js");
 
 // 1. Copy these EXACTLY from your controllers/email.js
 require('dotenv').config();
