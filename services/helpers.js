@@ -3,7 +3,7 @@ const { sheets, drive } = require("../config/googleAuth.js");
 // Function to re-shift rows based on a predefined order of names, keeping the TOTAL row last
 function reShiftRowsBasedOnName(rangeData) {
     // 1. Updated master list to include Allian and use base names
-    const nameOrder = ["Saad", "Umar", "Faraz", "Aitzaz", "Fahad", "Bilal", "Shariq", "Talha", "Sami", "Usama", "Allian"];
+    const nameOrder = ["Saad", "Umar", "Faraz", "Hassan", "Aitzaz", "Fahad", "Bilal", "Shariq", "Talha", "Sami", "Usama", "Allian"];
 
     // 2. Identify TOTAL row
     const totalRow = rangeData.find((row) => row[1] && row[1].toString().trim().toUpperCase() === "TOTAL");
