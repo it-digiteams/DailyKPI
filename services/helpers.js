@@ -177,9 +177,9 @@ async function fetchDailySheetData(sheetId, sheetName) {
     try {
         // Define the ranges to fetch
         const ranges = [
-            `${sheetName}!A6:H16`,
-            `${sheetName}!A19:H29`,
-            `${sheetName}!A32:H42`,
+            `${sheetName}!A5:H15`,
+            `${sheetName}!A18:H28`,
+            `${sheetName}!A31:H41`,
         ];
 
         // Fetch all data in a single batch request

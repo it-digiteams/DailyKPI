@@ -12,8 +12,9 @@ const runDailyEmail = async () => {
         throw new Error("No data found in the specified range.");
     }
 
-    const tableRows = data.slice(-11, -1);
-    const footerRow = data.slice(-1)[0];
+    // ✅ DYNAMIC SLICING: Same robust logic used in the Weekly report
+    const footerRow = data[data.length - 1]; 
+    const tableRows = data.slice(0, -1); 
 
     const htmlTableRows = generateHTMLRows(tableRows, footerRow);
     const htmlContent = generateHTMLTemplate(htmlTableRows, "Timesheet Daily Update", "Date");
