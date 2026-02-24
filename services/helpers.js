@@ -49,17 +49,20 @@ function getPreviousMonthNumber() {
     return previousMonth === 0 ? 12 : previousMonth; // If Jan (0), return 12 for Dec
 }
 
+// INSIDE services/helpers.js
+
 async function fetchMonthlyData(sheetId, sheetName) {
     try {
+        // ✅ Corrected starting range: S18
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: `${sheetName}!S22:Z1000`, // start where your report actually begins
+            range: `${sheetName}!S18:Z1000`, 
         });
 
         const data = response.data.values || [];
-        const previousMonth = getPreviousMonthNumber();
+        const previousMonth = getPreviousMonthNumber(); 
 
-        const monthRows = [];
+        let monthRows = [];
         let footerRow = [];
 
         // Scan rows until TOTAL is found
@@ -76,6 +79,11 @@ async function fetchMonthlyData(sheetId, sheetName) {
                 footerRow = row;
                 break;
             }
+        }
+
+        // ✅ SECURITY: Enforce strict name order (Allian, Hassan, Saad, etc.)
+        if (monthRows.length > 0) {
+            monthRows = reShiftRowsBasedOnName(monthRows);
         }
 
         return {
