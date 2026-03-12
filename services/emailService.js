@@ -2,7 +2,7 @@ const { emailTransporter } = require("../config/email.js");
 
 function sendEmail(timeText, htmlContent, callback) {
     const mailToJanis = setMailOption(
-        "info@digital-accountant.co.uk",
+        "info@digital-accountant.co.uk",//digital.usamajaved@gmail.com
         htmlContent,
         timeText
     );

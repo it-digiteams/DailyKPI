@@ -3,7 +3,7 @@ const { sheets, drive } = require("../config/googleAuth.js");
 // Function to re-shift rows based on a predefined order of names, keeping the TOTAL row last
 function reShiftRowsBasedOnName(rangeData) {
     // 1. Updated master list to include Allian and use base names
-    const nameOrder = ["Saad", "Umar", "Faraz", "Hassan", "Aitzaz", "Fahad", "Bilal", "Shariq", "Talha", "Sami", "Usama", "Allian"];
+    const nameOrder = ["Saad", "Umar", "Faraz", "Hassan",  "Fahad", "Bilal", "Talha"];
 
     // 2. Identify TOTAL row
     const totalRow = rangeData.find((row) => row[1] && row[1].toString().trim().toUpperCase() === "TOTAL");
@@ -56,7 +56,7 @@ async function fetchMonthlyData(sheetId, sheetName) {
         // ✅ Corrected starting range: S18
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: `${sheetName}!S18:Z1000`, 
+            range: `${sheetName}!U18:AC1000`, 
         });
 
         const data = response.data.values || [];
@@ -133,10 +133,10 @@ function getPreviousWeekRange() {
     console.log(`║ 📅 Today: ${today.toDateString().padEnd(34)} ║`);
     console.log(`║ 🔢 Current ISO Week: ${String(currentWeek).padEnd(23)} ║`);
     console.log(`║ 🔙 Fetching Week: ${String(previousWeek).padEnd(27)} ║`);
-    console.log(`║ 📍 Excel Range: J${startRow}:Q${endRow}${' '.repeat(Math.max(0, 27 - (startRow + ':Q' + endRow).length))} ║`);
+    console.log(`║ 📍 Excel Range: K${startRow}:S${endRow}${' '.repeat(Math.max(0, 27 - (startRow + ':S' + endRow).length))} ║`);
     console.log(`╚═══════════════════════════════════════════╝\n`);
 
-    return `J${startRow}:Q${endRow}`;
+    return `K${startRow}:S${endRow}`;
 }
 
 // Fetch data for the previous week
@@ -185,9 +185,9 @@ async function fetchDailySheetData(sheetId, sheetName) {
     try {
         // Define the ranges to fetch
         const ranges = [
-            `${sheetName}!A5:H15`,
-            `${sheetName}!A18:H28`,
-            `${sheetName}!A31:H41`,
+            `${sheetName}!A5:I15`,
+            `${sheetName}!A18:I28`,
+            `${sheetName}!A31:I41`,
         ];
 
         // Fetch all data in a single batch request

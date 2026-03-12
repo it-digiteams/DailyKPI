@@ -2,34 +2,35 @@
 function generateHTMLRows(tableRows, footerRow) {
     let htmlTableRows = "";
 
-    // Define a default row with placeholder values
-    const defaultRow = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"];
+    // Define a default row with placeholder values for 9 columns
+    const defaultRow = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "0.00%", "0.00%"];
 
     // Ensure tableRows is an array; if empty, use defaultRow
     if (!Array.isArray(tableRows) || tableRows.length === 0) {
         tableRows = [defaultRow];
     }
 
+    // Helper function to generate a <tr> with exactly 9 columns
+    const generateTr = (row, isFooter) => {
+        let cells = "";
+        for (let i = 0; i < 8; i++) {
+            cells += `<td style="${getCellStyle(isFooter)}">${row[i] || ''}</td>`;
+        }
+        // Add the 9th column with its fallback
+        cells += `<td style="${getCellStyle(isFooter)}">${row[8] || '0.00%'}</td>`;
+        return `<tr>${cells}</tr>`;
+    };
+    
     // Generate table rows
     for (const row of tableRows) {
-        htmlTableRows += `
-        <tr>
-            ${row.map((cell) => `<td style=\"${getCellStyle(false)}\">${cell}</td>`).join("")}
-        </tr>
-      `;
+        htmlTableRows += generateTr(row, false);
     }
 
     // Ensure footerRow is a valid array, otherwise use the default row
-    if (!Array.isArray(footerRow) || footerRow.length === 0) {
-        footerRow = defaultRow;
-    }
+    const finalFooterRow = (!Array.isArray(footerRow) || footerRow.length === 0) ? defaultRow : footerRow;
 
     // Generate footer row
-    htmlTableRows += `
-      <tr>
-          ${footerRow.map((cell) => `<td style=\"${getCellStyle(true)}\">${cell}</td>`).join("")}
-      </tr>
-    `;
+    htmlTableRows += generateTr(finalFooterRow, true);
 
     return htmlTableRows;
 }
@@ -52,7 +53,8 @@ function generateHTMLTemplate(htmlTableRows, emailHeader, time) {
                           <th style="${getHeaderStyle()}">TRAINING</th>
                           <th style="${getHeaderStyle()}">OPERATIONS</th>
                           <th style="${getHeaderStyle()}">Total</th>
-                          <th style="${getHeaderStyle()}">% Efficiency</th>
+                          <th style="${getHeaderStyle()}">REV %</th>
+                          <th style="${getHeaderStyle()}">OPS %</th>
                       </tr>
                   </thead>
                   <tbody>
