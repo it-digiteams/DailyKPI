@@ -4,6 +4,7 @@ const { generateHTMLRows, generateHTMLTemplate } = require("../services/htmlGen.
 
 // Core logic functions (no req/res)
 const runDailyEmail = async () => {
+    console.log("[LOG] 🚀 Starting daily report process...");
     const sheetId = process.env.GOOGLE_SPREADSHEET_ID;
     const sheetName = "REPORT";
 
@@ -11,6 +12,7 @@ const runDailyEmail = async () => {
     if (!data || !Array.isArray(data) || data.length === 0) {
         throw new Error("No data found in the specified range.");
     }
+    console.log(`[LOG] Data validation successful. Row count: ${data.length}`);
 
     // ✅ DYNAMIC SLICING: Same robust logic used in the Weekly report
     const footerRow = data[data.length - 1]; 
@@ -21,7 +23,11 @@ const runDailyEmail = async () => {
 
     return new Promise((resolve, reject) => {
         sendEmail("Daily", htmlContent, (error, info) => {
-            if (error) return reject(error);
+            if (error) {
+                console.log(`[LOG] ❌ Email failed to send. Error: ${error.message}`);
+                return reject(error);
+            }
+            console.log(`[LOG] 📧 Email sent successfully. Response: ${info.response}`);
             resolve(info);
         });
     });

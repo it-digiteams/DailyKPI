@@ -204,9 +204,11 @@ async function fetchDailySheetData(sheetId, sheetName) {
         const month = String(yesterday.getMonth() + 1).padStart(2, "0"); // Adding 1 because months are 0-based
         const year = yesterday.getFullYear();
         const yesterdayFormatted = `${day}/${month}/${year}`; // e.g., "28/01/2024"
+        console.log(`[LOG] Searching for date: ${yesterdayFormatted}`);
 
         // Loop through all ranges and check if the date matches yesterday's date
         for (let i = 0; i < response.data.valueRanges.length; i++) {
+            console.log(`[LOG] Checking Range: ${ranges[i]}`);
             const range = response.data.valueRanges[i];
             const rangeData = range.values;
 
@@ -224,6 +226,7 @@ async function fetchDailySheetData(sheetId, sheetName) {
 
                 // Check if the first row of the range (Date) matches yesterday's date
                 if (rangeData[0][0] === yesterdayFormatted) {
+                    console.log(`[LOG] ✅ Match found in range ${ranges[i]}`);
                     // If the date matches, re-shift the rows based on names and return the updated data
                     const updatedRangeData = reShiftRowsBasedOnName(rangeData);
                     return updatedRangeData;
@@ -231,11 +234,11 @@ async function fetchDailySheetData(sheetId, sheetName) {
             }
         }
 
-        // If no matching date is found, return "No data found for yesterday"
-        return "No data found for yesterday";
+        // If no matching date is found, throw a detailed error
+        throw new Error(`[DATA-MISSING] Target date ${yesterdayFormatted} not found in the defined sheet ranges.`);
     } catch (error) {
-        console.error("Error fetching daily sheet data:", error.message);
-        return "Error fetching data";
+        console.error("[ERROR] API or Fetch Failure:", error.message);
+        throw error;
     }
 }
 
